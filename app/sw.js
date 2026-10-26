@@ -1,6 +1,6 @@
 /* Service worker: deja la app disponible sin conexión.
    Si cambias algún archivo de la app, sube el número de VERSION para que los celulares se actualicen. */
-const VERSION = 'recicla-pucp-v2';
+const VERSION = 'recicla-pucp-v4';
 const SHELL = [
   './', 'index.html', 'styles.css', 'config.js', 'content.js', 'art.js', 'cloud.js', 'app.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png',
