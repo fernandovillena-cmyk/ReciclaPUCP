@@ -43,7 +43,7 @@
 
     // ---- Nube (Google Sheets). Con endpoint vacío la app funciona solo en modo local ----
     cloud: {
-      endpoint: '',                 // URL de la aplicación web de Apps Script (termina en /exec)
+      endpoint: 'https://script.google.com/macros/s/AKfycbx_chDBUhUkfYxb4A7drd2urR-GMI9tcE3fOOQOLaDPEvr2jfQaTQR51MIdctvjDk1CCw/exec',                 // URL de la aplicación web de Apps Script (termina en /exec)
       token: 'cambia-este-token',   // debe ser igual al TOKEN de backend/Code.gs
       retryEverySec: 45,
       statsEverySec: 300,
