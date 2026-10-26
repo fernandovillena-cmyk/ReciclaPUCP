@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>QR de los tachos · Recicla PUCP</title>
+  <style>
+    :root { --navy: #042354; --royal: #163297; --green: #1fa463; --ink: #0c1f4a; --muted: #55668a; --line: #cfd9ee; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--ink); background: #eef3fb; }
+    header.top { background: linear-gradient(160deg, var(--navy), var(--royal)); color: #fff; padding: 22px 16px 26px; }
+    header.top .in { max-width: 960px; margin: 0 auto; display: flex; gap: 16px; align-items: center; }
+    header.top .q { width: 84px; height: 84px; flex: none; }
+    h1 { margin: 0 0 4px; font-size: 26px; }
+    header p { margin: 0; opacity: .88; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+    .tools { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 10px; }
+    button { min-height: 44px; padding: 0 18px; border-radius: 12px; border: 2px solid var(--line); background: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+    button.primary { background: var(--royal); border-color: var(--royal); color: #fff; }
+    .tips { background: #fff; border-radius: 14px; padding: 12px 16px; font-size: 14px; color: var(--muted); }
+    .tips b { color: var(--ink); }
+    main { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding-top: 16px; padding-bottom: 40px; }
+    .card { background: #fff; border: 2px dashed var(--line); border-radius: 18px; padding: 18px; text-align: center; break-inside: avoid; }
+    .card .qr { width: 100%; max-width: 240px; margin: 0 auto; display: block; }
+    .card .qr svg { display: block; width: 100%; height: auto; }
+    .card h2 { margin: 10px 0 0; font-size: 30px; letter-spacing: 1px; color: var(--royal); }
+    .card .place { margin: 0; font-weight: 700; }
+    .card .how { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+    .card .actions { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+    .card .actions button { min-height: 38px; padding: 0 12px; font-size: 13px; }
+
+    @media print {
+      @page { size: A4; margin: 10mm; }
+      body { background: #fff; }
+      header.top { background: none; color: var(--ink); padding: 0 0 4mm; }
+      header.top .q { width: 16mm; height: 16mm; }
+      .tools, .tips, .card .actions { display: none; }
+      .wrap { max-width: none; padding: 0; }
+      main { grid-template-columns: 1fr 1fr; gap: 6mm; padding: 0; }
+      .card { border: 1px dashed #888; border-radius: 0; padding: 6mm; height: 86mm; display: flex; flex-direction: column; align-items: center; justify-content: center; page-break-inside: avoid; }
+      .card .qr { max-width: 52mm; }
+      .card h2 { font-size: 22pt; margin-top: 3mm; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="in">
+      <div class="q" id="q"></div>
+      <div>
+        <h1>QR de los tachos · Recicla PUCP</h1>
+        <p>Un QR distinto por tacho. Imprímelos (6 por hoja), recórtalos por la línea punteada y pégalos a la altura de los ojos.</p>
+      </div>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="tools">
+      <button class="primary" id="print">Imprimir / guardar como PDF</button>
+      <button id="dl-all">Descargar los 10 en SVG</button>
+    </div>
+    <div class="tips">
+      <b>Antes de imprimir:</b> el QR depende de <code>qrSalt</code> y <code>tachoCount</code> en <code>config.js</code>. Si los cambias después de imprimir, los QR viejos dejan de valer.
+      <b>Tamaño:</b> mínimo 5 cm por lado (8 cm o más para tachos grandes). <b>Protección:</b> cúbrelos con cinta transparente para que no se borren.
+    </div>
+  </div>
+  <main class="wrap" id="grid"></main>
+
+  <script src="config.js"></script>
+  <script src="art.js"></script>
+  <script src="qrgen.js"></script>
+  <script>
+    (function () {
+      var C = window.RP_CONFIG, grid = document.getElementById('grid'), items = [];
+      document.getElementById('q').innerHTML = RP_ART.quilla('hola');
+
+      function download(name, blob) {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = name;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+      }
+
+      for (var n = 1; n <= C.tachoCount; n++) {
+        var qr = QR.encode(C.makePayload(n), 'Q');
+        items.push({ n: n, qr: qr, svg: QR.toSvg(qr, { border: 4 }) });
+      }
+
+      items.forEach(function (it) {
+        var card = document.createElement('section');
+        card.className = 'card';
+        card.innerHTML =
+          '<div class="qr">' + it.svg + '</div>' +
+          '<h2>' + C.tachoLabel(it.n).toUpperCase() + '</h2>' +
+          (C.tachoPlace(it.n) ? '<p class="place"></p>' : '') +
+          '<p class="how">Abre Recicla PUCP y escanea este código.<br>La foto debe mostrar los tachos de fondo.</p>' +
+          '<div class="actions"><button data-svg>SVG</button><button data-png>PNG</button></div>';
+        if (C.tachoPlace(it.n)) card.querySelector('.place').textContent = C.tachoPlace(it.n);
+        card.querySelector('[data-svg]').onclick = function () {
+          download('tacho-' + C.tachoId(it.n) + '.svg', new Blob([it.svg], { type: 'image/svg+xml' }));
+        };
+        card.querySelector('[data-png]').onclick = function () {
+          var cv = document.createElement('canvas');
+          QR.toCanvas(it.qr, cv, 16, 4);
+          cv.toBlob(function (b) { download('tacho-' + C.tachoId(it.n) + '.png', b); }, 'image/png');
+        };
+        grid.appendChild(card);
+      });
+
+      document.getElementById('print').onclick = function () { window.print(); };
+      document.getElementById('dl-all').onclick = function () {
+        items.forEach(function (it, i) {
+          setTimeout(function () { download('tacho-' + C.tachoId(it.n) + '.svg', new Blob([it.svg], { type: 'image/svg+xml' })); }, i * 400);
+        });
+      };
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "id": "./index.html",
+  "name": "Recicla PUCP",
+  "short_name": "Recicla PUCP",
+  "description": "Escanea el QR del tacho, elige qué botas, toma la foto y suma reciclajes con Quilla.",
+  "lang": "es-PE",
+  "dir": "ltr",
+  "start_url": "./index.html?origen=app",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#042354",
+  "theme_color": "#042354",
+  "categories": ["education", "lifestyle", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "screenshots": [
+    { "src": "capturas/escaner.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Abre directo en la cámara para escanear el QR del tacho" },
+    { "src": "capturas/elegir-tacho.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Escoge el tacho por color y dibujos" },
+    { "src": "capturas/quilla.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Quilla te felicita y te cuenta un dato con fuente" }
+  ],
+  "shortcuts": [
+    { "name": "Escanear un tacho", "short_name": "Escanear", "url": "./index.html?origen=atajo", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] }
+  ]
+}

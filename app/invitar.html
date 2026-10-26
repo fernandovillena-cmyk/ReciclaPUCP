@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Invitar a Recicla PUCP</title>
+  <style>
+    :root { --navy: #042354; --royal: #163297; --green: #1fa463; --ink: #0c1f4a; --muted: #55668a; --line: #cfd9ee; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--ink); background: #eef3fb; }
+    .wrap { max-width: 520px; margin: 0 auto; padding: 20px 16px 40px; }
+    h1 { margin: 0 0 6px; font-size: 24px; }
+    p.lead { margin: 0 0 16px; color: var(--muted); }
+    label { display: block; margin-bottom: 6px; font-weight: 800; font-size: 14px; }
+    input { width: 100%; min-height: 50px; padding: 0 14px; border: 2px solid var(--line); border-radius: 14px; font: inherit; }
+    button { min-height: 46px; padding: 0 16px; border-radius: 12px; border: 2px solid var(--line); background: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+    button.primary { background: var(--royal); border-color: var(--royal); color: #fff; }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .poster { margin-top: 18px; background: linear-gradient(165deg, var(--navy), var(--royal)); color: #fff; border-radius: 28px; padding: 24px 20px; text-align: center; }
+    .poster .q { width: 120px; height: 120px; margin: 0 auto; }
+    .poster h2 { margin: 6px 0 2px; font-size: 26px; }
+    .poster p { margin: 0 0 14px; opacity: .9; }
+    .poster .code { background: #fff; border-radius: 20px; padding: 14px; width: min(100%, 300px); margin: 0 auto; }
+    .poster .code svg { width: 100%; height: auto; display: block; }
+    .poster ol { text-align: left; margin: 16px auto 0; padding-left: 22px; max-width: 320px; font-size: 14px; }
+    .poster small { display: block; margin-top: 12px; opacity: .7; word-break: break-all; }
+    .warn { background: #fff4d6; color: #5c4300; border-radius: 12px; padding: 10px 12px; font-size: 14px; margin-top: 12px; }
+    @media print {
+      @page { size: A4; margin: 12mm; }
+      body { background: #fff; }
+      .noprint { display: none !important; }
+      .poster { border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="noprint">
+      <h1>Invita a tus amigos</h1>
+      <p class="lead">Genera un QR para que cualquiera abra Recicla PUCP, la instale y empiece a reciclar. Pégalo en carteles, grupos o clases.</p>
+      <label for="url">Enlace de la app</label>
+      <input id="url" type="url" inputmode="url" placeholder="https://tu-sitio.github.io/recicla-pucp/" autocomplete="off">
+      <div class="warn" id="warn" hidden>Abre esta página desde el enlace publicado (no desde tu computadora) para que el enlace se complete solo, o escríbelo arriba.</div>
+      <div class="row">
+        <button class="primary" id="print">Imprimir cartel</button>
+        <button id="png">Bajar QR (PNG)</button>
+        <button id="svg">Bajar QR (SVG)</button>
+        <button id="copy">Copiar enlace</button>
+        <button id="share">Compartir…</button>
+      </div>
+    </div>
+
+    <div class="poster">
+      <div class="q" id="q"></div>
+      <h2>Recicla PUCP</h2>
+      <p>Escanea, elige, fotografía y suma reciclajes con Quilla 🌙</p>
+      <div class="code" id="code"></div>
+      <ol>
+        <li>Escanea el código con la cámara de tu celular.</li>
+        <li>Toca <b>Instalar</b> (en iPhone: Compartir → «Añadir a pantalla de inicio»).</li>
+        <li>Crea tu usuario una sola vez y listo.</li>
+      </ol>
+      <small id="shown"></small>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="art.js"></script>
+  <script src="qrgen.js"></script>
+  <script>
+    (function () {
+      var $ = function (s) { return document.querySelector(s); };
+      var input = $('#url'), qr = null;
+      $('#q').innerHTML = RP_ART.quilla('festejo');
+
+      // Si la página está publicada, el enlace de la app es la misma carpeta.
+      var guess = '';
+      if (/^https?:$/.test(location.protocol) && !/^(localhost|127\.)/.test(location.hostname)) guess = location.href.split('#')[0].split('?')[0].replace(/[^/]*$/, '');
+      input.value = guess;
+      $('#warn').hidden = !!guess;
+
+      function draw() {
+        var url = input.value.trim();
+        $('#warn').hidden = !!url;
+        if (!url) { $('#code').innerHTML = '<p style="color:#55668a;margin:30px 0">Escribe el enlace para generar el QR</p>'; $('#shown').textContent = ''; qr = null; return; }
+        try { qr = QR.encode(url, 'M', 1, 10); } catch (e) { $('#code').innerHTML = '<p style="color:#b3261e">El enlace es demasiado largo para este generador.</p>'; qr = null; return; }
+        $('#code').innerHTML = QR.toSvg(qr, { border: 1 });
+        $('#shown').textContent = url;
+      }
+      input.addEventListener('input', draw); draw();
+
+      function download(name, blob) {
+        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+        document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+      }
+      $('#png').onclick = function () { if (!qr) return; var cv = document.createElement('canvas'); QR.toCanvas(qr, cv, 12, 4); cv.toBlob(function (b) { download('recicla-pucp-qr.png', b); }, 'image/png'); };
+      $('#svg').onclick = function () { if (qr) download('recicla-pucp-qr.svg', new Blob([QR.toSvg(qr, { border: 4 })], { type: 'image/svg+xml' })); };
+      $('#print').onclick = function () { window.print(); };
+      $('#copy').onclick = function () { if (navigator.clipboard) navigator.clipboard.writeText(input.value.trim()).then(function () { $('#copy').textContent = '¡Copiado!'; setTimeout(function () { $('#copy').textContent = 'Copiar enlace'; }, 1800); }); };
+      $('#share').onclick = function () {
+        var url = input.value.trim(); if (!url) return;
+        if (navigator.share) navigator.share({ title: 'Recicla PUCP', text: '¡Recicla en el campus y suma con Quilla! 🌙', url: url }).catch(function () {});
+        else $('#copy').click();
+      };
+    })();
+  </script>
+</body>
+</html>
